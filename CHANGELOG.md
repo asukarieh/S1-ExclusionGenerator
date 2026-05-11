@@ -4,6 +4,36 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3] - 2026-05-11
+
+### Added
+- **`s1_discovery.sh`** — Linux companion to the PowerShell generator
+  (v1.0, MIT). Detects running services and produces a SentinelOne-ready
+  exclusion list (paths, processes, file extensions) at
+  `/tmp/s1_exclusions_<hostname>_<timestamp>.txt` by default.
+  - Coverage: Apache, Nginx, PHP-FPM, Tomcat / Java app servers, MySQL /
+    MariaDB, PostgreSQL, Oracle Database (with auto-discovery of each
+    running SID's datafile / redo / control / dump directories via
+    `sqlplus / as sysdba`), Oracle ASM, MongoDB, Redis, Elasticsearch,
+    Cassandra, RabbitMQ, HAProxy, Docker, Kubernetes, NFS server,
+    auto-discovered remote NFS / CIFS mounts, Veeam Agent, Commvault,
+    Bacula.
+  - Resolves authoritative data paths from live process arguments first
+    (`/proc/<pid>/environ`, `ps -ef`, `pg_lsclusters`, `my_print_defaults`),
+    then falls back to common defaults.
+  - `--help` flag prints the embedded usage block; `-o <path>` lets the
+    operator redirect the output anywhere.
+  - Hostname is sanitised (matches the PowerShell side) so weird DNS
+    names never break the output filename.
+  - Refuses to run as a non-root user; some inventory steps need root.
+
+### Changed
+- Universal `/tmp` and `/var/tmp` exclusions in the Linux script are now
+  annotated with a security warning in the WARNINGS section of the
+  generated report. Operators are explicitly prompted to consider removing
+  them before importing, since `/tmp` is a common malware-drop location
+  and excluding it blinds the EDR to a large class of attacker behaviour.
+
 ## [2.2] - 2026-05-11
 
 ### Fixed

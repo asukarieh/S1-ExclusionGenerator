@@ -1,24 +1,28 @@
 # S1-ExclusionGenerator
 
-A SentinelOne exclusion-recommendation generator for Windows endpoints.
-
-The script inventories a Windows host (installed software, running services,
-running processes) and matches what it finds against a curated knowledge
-base of enterprise, Telco, Mobile Money, and fintech products. The output
-is a SentinelOne-ready exclusion list in four formats — HTML, CSV, JSON,
-and TXT — that an analyst can review and import into the S1 management
+A pair of SentinelOne exclusion-recommendation generators — one for
+**Windows** endpoints, one for **Linux** endpoints. Each script inventories
+the local host (installed software, running services, running processes)
+and matches what it finds against a curated knowledge base of enterprise,
+Telco, Mobile Money, and fintech products. The output is a SentinelOne-ready
+exclusion list that an analyst can review and import into the S1 management
 console.
 
-The intent is to make onboarding new Windows endpoints to SentinelOne
-faster and less error-prone, particularly on database, middleware, and
-billing hosts where missing antivirus exclusions are a frequent cause of
-performance regressions.
+| Script | Platform | Output formats |
+|--------|----------|----------------|
+| `S1-ExclusionGenerator.ps1` | Windows 7 SP1 → 11 / Server 2008 R2 SP1 → 2025 | HTML, CSV, JSON, TXT |
+| `s1_discovery.sh`           | Bash 4+ on Debian / Ubuntu / RHEL / CentOS / Rocky / Alma / Oracle Linux / SUSE | TXT |
+
+The intent is to make onboarding new endpoints to SentinelOne faster and
+less error-prone, particularly on database, middleware, and billing hosts
+where missing antivirus exclusions are a frequent cause of performance
+regressions.
 
 ## Author
 
 Alaa G. Sukarieh
 
-## Quick start
+## Quick start — Windows
 
 Run the script in an **elevated** PowerShell session on the host you
 want to inventory:
@@ -35,6 +39,33 @@ To write the reports somewhere else:
 ```powershell
 .\S1-ExclusionGenerator.ps1 -OutputPath C:\Reports\S1
 ```
+
+## Quick start — Linux
+
+Run as root so the discovery can read `/proc/<pid>/environ`, walk
+`/etc/oraInst.loc`, query Oracle via `sqlplus / as sysdba`, and list swap
+devices:
+
+```bash
+sudo bash s1_discovery.sh
+```
+
+By default the recommendations file is written to
+`/tmp/s1_exclusions_<hostname>_<timestamp>.txt`. To redirect:
+
+```bash
+sudo bash s1_discovery.sh -o /var/log/s1_exclusions.txt
+```
+
+The Linux script detects: Apache, Nginx, PHP-FPM, Tomcat, MySQL / MariaDB,
+PostgreSQL, Oracle Database (including auto-querying each running SID for
+its datafile / redo / control / dump directories), Oracle ASM, MongoDB,
+Redis, Elasticsearch, Cassandra, RabbitMQ, HAProxy, Docker, Kubernetes,
+NFS server + remote NFS/CIFS mounts, Veeam Agent, Commvault, Bacula.
+
+It always also flags `/tmp` and `/var/tmp` as common malware-drop locations
+in a `WARNINGS` section so the operator decides whether to keep them in
+the path-exclusion list or trim them out before importing.
 
 ## Requirements
 
@@ -161,6 +192,7 @@ needed.
 
 | Version | Notes                                                 |
 |---------|-------------------------------------------------------|
+| 2.3     | Added Linux companion `s1_discovery.sh` v1.0 covering web servers, databases (including auto-discovered Oracle SIDs), Java app servers, container runtimes, message brokers, and backup agents. `--help` and `-o output` flags. Universal `/tmp` exclusion now annotated with a security warning. |
 | 2.2     | Hardened release: strict mode, error handling, wildcard-aware unknown-process filter, working registry walk (HKLM PSDrive + per-SID HKU enumeration), env-var expansion, sanitised filenames, useful exit codes, elevation warning, console-encoding fix |
 | 2.1     | Initial public version                                |
 
