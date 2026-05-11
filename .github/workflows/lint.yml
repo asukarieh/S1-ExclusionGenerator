@@ -1,0 +1,66 @@
+name: Lint
+
+# Run on every push to main and on every PR. CI here is a low-friction
+# safety net -- it catches the kind of mistake we hit during development
+# (e.g. the `$Matches` variable shadowing the automatic regex variable)
+# before it ships.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  powershell:
+    name: PSScriptAnalyzer (PowerShell)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $excluded = @(
+            # Write-Host is intentional: console output is the script's UI
+            'PSAvoidUsingWriteHost',
+            # We're not building cmdlets, so ShouldProcess is overkill
+            'PSUseShouldProcessForStateChangingFunctions',
+            # The KB hashtable literals use a per-line style PSSA dislikes
+            'PSUseConsistentIndentation',
+            'PSUseConsistentWhitespace'
+          )
+          $results = Invoke-ScriptAnalyzer `
+            -Path . -Recurse `
+            -Severity Error,Warning `
+            -ExcludeRule $excluded
+
+          if ($results) {
+            $results | Format-Table -AutoSize -Wrap | Out-String | Write-Host
+            $errors = @($results | Where-Object { $_.Severity -eq 'Error' })
+            $warnings = @($results | Where-Object { $_.Severity -eq 'Warning' })
+            Write-Host "::notice::PSScriptAnalyzer found $($errors.Count) error(s), $($warnings.Count) warning(s)"
+            if ($errors.Count -gt 0) {
+              throw "PSScriptAnalyzer failed: $($errors.Count) error(s)"
+            }
+          } else {
+            Write-Host '::notice::PSScriptAnalyzer: clean.'
+          }
+
+  bash:
+    name: shellcheck (Bash)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run shellcheck
+        run: |
+          # --severity=error: only fail CI on real bugs. Warnings show up
+          # in the output (so you can address them) but don't block.
+          shellcheck --severity=error --color=always \
+            s1_discovery.sh \
+            push-to-github.sh
