@@ -1,0 +1,23 @@
+# Generated reports - never commit these. They contain hostnames,
+# process lists, and inventory data from real endpoints.
+S1_Exclusions_*.html
+S1_Exclusions_*.csv
+S1_Exclusions_*.json
+S1_Exclusions_*.txt
+
+# PowerShell transcripts and logs
+*.log
+PowerShell_transcript.*
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local test artefacts
+test-output/
+scratch/
