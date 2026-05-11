@@ -1,5 +1,11 @@
 # S1-ExclusionGenerator
 
+[![Lint](https://github.com/asukarieh/S1-ExclusionGenerator/actions/workflows/lint.yml/badge.svg)](https://github.com/asukarieh/S1-ExclusionGenerator/actions/workflows/lint.yml)
+[![Latest release](https://img.shields.io/github/v/release/asukarieh/S1-ExclusionGenerator?display_name=tag&sort=semver)](https://github.com/asukarieh/S1-ExclusionGenerator/releases/latest)
+[![License](https://img.shields.io/github/license/asukarieh/S1-ExclusionGenerator)](LICENSE)
+[![PowerShell 5.1+](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
+[![Bash 4+](https://img.shields.io/badge/Bash-4%2B-4EAA25?logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
+
 A pair of SentinelOne exclusion-recommendation generators — one for
 **Windows** endpoints, one for **Linux** endpoints. Each script inventories
 the local host (installed software, running services, running processes)
@@ -205,4 +211,13 @@ needed.
 Issues and pull requests are welcome. The KB is the part most likely to
 need community input; if you operate a product not in the list, a short
 PR adding it (with a sensible `Risk` rating and `Notes`) is the best
-contribution.
+contribution. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow,
+including the protected-branch rules.
+
+## Security
+
+For security issues, please use [private vulnerability reporting](https://github.com/asukarieh/S1-ExclusionGenerator/security/advisories/new) rather than a public issue. See [SECURITY.md](SECURITY.md) for the full policy.
+
+## Code of conduct
+
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md) v2.1.

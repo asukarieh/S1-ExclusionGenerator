@@ -1,0 +1,20 @@
+# Dependabot configuration.
+# The project itself has zero language-level dependencies (PowerShell + Bash,
+# both standard-library-only), so the only ecosystem to track is the
+# github-actions versions pinned in lint.yml.
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
