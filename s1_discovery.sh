@@ -512,9 +512,18 @@ done < <(swapon --show=NAME --noheadings 2>/dev/null || true)
 # =============================================================================
 # DEDUPLICATE
 # =============================================================================
-mapfile -t PATH_EXCL < <(printf '%s\n' "${PATH_EXCL[@]+\"${PATH_EXCL[@]}\"}" | sort -u | grep -v '^$')
-mapfile -t PROC_EXCL < <(printf '%s\n' "${PROC_EXCL[@]+\"${PROC_EXCL[@]}\"}" | sort -u | grep -v '^$')
-mapfile -t EXT_EXCL  < <(printf '%s\n' "${EXT_EXCL[@]+\"${EXT_EXCL[@]}\"}"  | sort -u | grep -v '^$')
+# Guard each mapfile with a length check so empty arrays don't trip
+# `set -u`. The previous form used the "${arr[@]+"${arr[@]}"}" idiom which
+# is correct in bash but fragile to round-trip through JSON encoders.
+if [[ ${#PATH_EXCL[@]} -gt 0 ]]; then
+    mapfile -t PATH_EXCL < <(printf '%s\n' "${PATH_EXCL[@]}" | sort -u | grep -v '^$')
+fi
+if [[ ${#PROC_EXCL[@]} -gt 0 ]]; then
+    mapfile -t PROC_EXCL < <(printf '%s\n' "${PROC_EXCL[@]}" | sort -u | grep -v '^$')
+fi
+if [[ ${#EXT_EXCL[@]}  -gt 0 ]]; then
+    mapfile -t EXT_EXCL  < <(printf '%s\n' "${EXT_EXCL[@]}"  | sort -u | grep -v '^$')
+fi
 
 # =============================================================================
 # WRITE OUTPUT FILE
@@ -528,7 +537,7 @@ cat << HEADER
   Kernel    : $(uname -r)
   Generated : $(date)
   Generator : s1_discovery.sh v1.0 (Alaa G. Sukarieh)
-  Services  : $(IFS=", "; echo "${DETECTED[*]+\"${DETECTED[*]}\"}")
+  Services  : $(if [[ ${#DETECTED[@]} -gt 0 ]]; then IFS=", "; echo "${DETECTED[*]}"; fi)
 =============================================================================
 
 SECTION 1 — PATH / FOLDER EXCLUSIONS
@@ -582,7 +591,7 @@ FOOTER
 echo
 echo "======================================================"
 echo "  Done."
-echo "  Services : ${#DETECTED[@]}  ($(IFS=", "; echo "${DETECTED[*]+\"${DETECTED[*]}\"}") )"
+echo "  Services : ${#DETECTED[@]}  ($(if [[ ${#DETECTED[@]} -gt 0 ]]; then IFS=", "; echo "${DETECTED[*]}"; fi) )"
 echo "  Paths    : ${#PATH_EXCL[@]}"
 echo "  Processes: ${#PROC_EXCL[@]}"
 echo "  Extensions: ${#EXT_EXCL[@]}"
